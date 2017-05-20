@@ -1,4 +1,3 @@
-# helper function for printing messages
 module Prompt
   def prompt(message = '')
     puts "==> #{message}"
@@ -12,7 +11,7 @@ class Card
            'Jack', 'Queen', 'King', 'Ace']
 
   attr_reader :card
-  
+
   def initialize(rank, suit, face_up = true)
     @card = [rank, suit]
     @face_up = face_up
@@ -48,14 +47,13 @@ class Card
 end
 
 class Deck
-
   attr_reader :cards
 
   def initialize
     @cards = build_new_deck
   end
 
-  def get_top_card
+  def deal_card
     cards.pop
   end
 
@@ -82,11 +80,10 @@ class Deck
 end
 
 class Participant
-
   include Prompt
-  
+
   attr_accessor :name
-  
+
   def initialize
     @name = ''
     @cards = []
@@ -106,80 +103,69 @@ class Participant
 
   def total
     total = 0
-    aces = 0
+    aces  = 0
     @cards.each do |card|
-      if card.rank.to_i == 0 && card.rank != 'Ace'
-        total += 10
-      elsif card.rank != 'Ace'
-        total += card.rank.to_i
+      if card.rank == 'Ace'
+        aces += 1
+      else
+        total += card.rank.to_i == 0 ? 10 : card.rank.to_i
       end
-      aces += 1 if card.rank == 'Ace'
     end
     aces.times do
-      if (total + 11) <= 21
-        total += 11
-      else
-        total += 1
-      end
+      total += (total + 11) <= 21 ? 11 : 1
     end
     total
   end
 
   def show_hand
-    @cards.each do |card|
-      card.display
-    end
+    @cards.each(&:display)
   end
 end
 
 class Player < Participant
- 
   def set_name
     name = ''
-    count = 0
     loop do
       prompt "What's your name?"
       name = gets.chomp
-      break unless name.size == 0
+      break unless name.empty?
       prompt "Sorry! Name should be at least one character!"
     end
     self.name = name
   end
 
   def show_hand
-    prompt "Player #{name} cards:"
-    super      
+    prompt "Player #{name} hand:"
+    super
   end
-  
 end
 
 class Dealer < Participant
   #---
   NAMES = ['Hal', 'R2D2', 'C64', 'Spectrum']
-  
+
   def set_name
     self.name = NAMES.sample
   end
 
   def show_hand
-    prompt "Dealer #{name} cards:"
+    prompt "Dealer #{name} hand:"
     super
   end
 
   def show_all_in_hand
-    @cards.each { |card| card.face_up! }
+    @cards.each(&:face_up!)
     show_hand
   end
 
   def cards_face_up!
-    @cards.each { |card| card.face_up! }
+    @cards.each(&:face_up!)
   end
 
   def add_card(card)
-    super 
+    super
     @cards.first.face_down! unless @cards.empty?
   end
-
 end
 
 class Game
@@ -194,14 +180,18 @@ class Game
   end
 
   def deal_card_to(plr)
-    plr.add_card(deck.get_top_card)
+    plr.add_card(deck.deal_card)
   end
 
   def deal_initial_cards
     2.times do
-      player.add_card(deck.get_top_card)
-      dealer.add_card(deck.get_top_card)
+      player.add_card(deck.deal_card)
+      dealer.add_card(deck.deal_card)
     end
+  end
+
+  def clear
+    system 'clear'
   end
 
   def display_cards
@@ -210,10 +200,6 @@ class Game
     prompt
     dealer.show_hand
     prompt
-  end
-
-  def clear
-    system 'clear'
   end
 
   def display_welcome_message
@@ -267,21 +253,30 @@ class Game
     prompt ''
   end
 
-  def show_result
-    dealer.cards_face_up!
-    display_cards
-    show_total
+  def show_bust
     if player.bust?
       prompt 'Player bust!'
     elsif dealer.bust?
       prompt 'Dealer bust!'
-    elsif player.total == dealer.total
+    end
+  end
+
+  def show_winner
+    if player.total == dealer.total
       prompt "It's a tie!"
     elsif player.total < dealer.total
       prompt "Dealer #{dealer.name} won!"
     else
       prompt "Player #{player.name} won!"
     end
+  end
+
+  def show_result
+    dealer.cards_face_up!
+    display_cards
+    show_total
+    show_bust
+    show_winner unless player.bust? || dealer.bust?
   end
 
   def set_names
@@ -299,7 +294,7 @@ class Game
     display_welcome_message
     set_names
     loop do
-      deal_initial_card
+      deal_initial_cards
       display_cards
       player_turn
       dealer_turn unless player.bust?
