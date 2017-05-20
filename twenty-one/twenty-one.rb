@@ -4,7 +4,6 @@ class Player
     # maybe cards? a name?
     @name = name
     @cards_in_hand = hand
-  end
 
   def hit
   end
@@ -56,12 +55,7 @@ class Deck
   def get_card
     cards.pop
   end
-
-  def deal
-    # does the dealer or the deck deal?
-  end
 end
-
 
 class Dealer < Player
 
@@ -70,14 +64,13 @@ class Dealer < Player
   end
 
   def deal
-
   end
-
 end
 
 class Participant
   # what goes in here? all the redundant behaviors from Player and Dealer?
 end
+
 
 class Game
 
