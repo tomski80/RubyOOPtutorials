@@ -1,3 +1,4 @@
+# helper function for printing messages
 module Prompt
   def prompt(message = '')
     puts "==> #{message}"
@@ -176,9 +177,9 @@ class Dealer < Participant
 
   def add_card(card)
     super 
-    @cards.first.face_down! if @cards.size > 0
+    @cards.first.face_down! unless @cards.empty?
   end
-  
+
 end
 
 class Game
@@ -197,16 +198,16 @@ class Game
   end
 
   def deal_initial_cards
-    2.times do 
-    player.add_card(deck.get_top_card)
-    dealer.add_card(deck.get_top_card)
+    2.times do
+      player.add_card(deck.get_top_card)
+      dealer.add_card(deck.get_top_card)
     end
   end
 
   def display_cards
     clear
     player.show_hand
-    prompt 
+    prompt
     dealer.show_hand
     prompt
   end
@@ -214,24 +215,24 @@ class Game
   def clear
     system 'clear'
   end
-  
+
   def display_welcome_message
     clear
-    prompt "Welcome to twenty-one game!"
+    prompt 'Welcome to twenty-one game!'
   end
 
   def display_goodbye_message
-    prompt "Thanks for playing! Goodbye!"
+    prompt 'Thanks for playing! Goodbye!'
   end
 
   def player_turn
     loop do
       move = ''
       loop do
-        prompt 
+        prompt
         prompt "#{player.name} do you want to (H)it or (S)tay?"
         move = gets.chomp.upcase
-        break if %w(H S).include?(move)
+        break if %w[H S].include?(move)
         prompt "Sorry! Please chose 'H' or 'S'!"
       end
       break if move == 'S'
@@ -241,7 +242,7 @@ class Game
     end
   end
 
-  def dealer_turn    
+  def dealer_turn
     while dealer.total < 17
       deal_card_to(dealer)
       break if dealer.bust?
@@ -251,29 +252,32 @@ class Game
   def play_again?
     choice = ''
     loop do
-      prompt "Do you want to play again? (y/n)"
+      prompt 'Do you want to play again? (y/n)'
       choice = gets.chomp.downcase
-      break if %w(y n).include?(choice)
-      prompt "Sorry! Incorrect input. Please enter y or n only!"  
+      break if %w[y n].include?(choice)
+      prompt 'Sorry! Incorrect input. Please enter y or n only!'
     end
     choice == 'y'
   end
-  
-  def show_result
-    dealer.cards_face_up!
-    display_cards
-    prompt 
+
+  def show_total
+    prompt
     prompt "Player #{player.name} total: #{player.total}"
     prompt "Dealer #{dealer.name} total: #{dealer.total}"
     prompt ''
-    case
-    when player.bust?
-      prompt "Player bust!"
-    when dealer.bust?
-      prompt "Dealer bust!"  
-    when player.total == dealer.total
+  end
+
+  def show_result
+    dealer.cards_face_up!
+    display_cards
+    show_total
+    if player.bust?
+      prompt 'Player bust!'
+    elsif dealer.bust?
+      prompt 'Dealer bust!'
+    elsif player.total == dealer.total
       prompt "It's a tie!"
-    when player.total < dealer.total
+    elsif player.total < dealer.total
       prompt "Dealer #{dealer.name} won!"
     else
       prompt "Player #{player.name} won!"
@@ -290,19 +294,18 @@ class Game
     player.clear_hand
     dealer.clear_hand
   end
-  
+
   def start
     display_welcome_message
     set_names
     loop do
-      deal_initial_cards      
+      deal_initial_card
       display_cards
       player_turn
       dealer_turn unless player.bust?
       show_result
-      
       break unless play_again?
-      game_reset   
+      game_reset
     end
     display_goodbye_message
   end
