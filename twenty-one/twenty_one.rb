@@ -40,10 +40,6 @@ class Card
   def face_up!
     @face_up = true
   end
-
-  def flip!
-    @face_up = @face_up ? false : true
-  end
 end
 
 class Deck
@@ -55,10 +51,6 @@ class Deck
 
   def deal_card
     cards.pop
-  end
-
-  def deal
-    get_top_card
   end
 
   def reset
@@ -127,7 +119,7 @@ class Player < Participant
     name = ''
     loop do
       prompt "What's your name?"
-      name = gets.chomp
+      name = gets.chomp.strip
       break unless name.empty?
       prompt "Sorry! Name should be at least one character!"
     end
@@ -200,6 +192,7 @@ class Game
     prompt
     dealer.show_hand
     prompt
+    prompt "Player #{player.name} total: #{player.total}"
   end
 
   def display_welcome_message
@@ -246,9 +239,7 @@ class Game
     choice == 'y'
   end
 
-  def show_total
-    prompt
-    prompt "Player #{player.name} total: #{player.total}"
+  def show_dealer_total
     prompt "Dealer #{dealer.name} total: #{dealer.total}"
     prompt ''
   end
@@ -274,7 +265,7 @@ class Game
   def show_result
     dealer.cards_face_up!
     display_cards
-    show_total
+    show_dealer_total
     show_bust
     show_winner unless player.bust? || dealer.bust?
   end
