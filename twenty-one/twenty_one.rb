@@ -145,11 +145,6 @@ class Dealer < Participant
     super
   end
 
-  def show_all_in_hand
-    @cards.each(&:face_up!)
-    show_hand
-  end
-
   def cards_face_up!
     @cards.each(&:face_up!)
   end
